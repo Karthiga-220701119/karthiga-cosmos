@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 
 interface Skill {
   name: string;
@@ -21,29 +22,35 @@ const skillsData: Skill[] = [
   { name: "RESTful APIs", level: 87, category: "Backend" },
 ];
 
-const SkillBar = ({ skill, inView }: { skill: Skill; inView: boolean }) => {
-  const [width, setWidth] = useState(0);
-
-  useEffect(() => {
-    if (inView) {
-      const timer = setTimeout(() => setWidth(skill.level), 200);
-      return () => clearTimeout(timer);
-    }
-  }, [inView, skill.level]);
-
+const SkillBar = ({ skill, inView, index }: { skill: Skill; inView: boolean; index: number }) => {
   return (
-    <div className="mb-6 animate-slide-in-left">
+    <motion.div 
+      className="mb-6"
+      initial={{ opacity: 0, x: -30 }}
+      animate={inView ? { opacity: 1, x: 0 } : {}}
+      transition={{ 
+        delay: index * 0.1,
+        type: "spring",
+        stiffness: 100
+      }}
+    >
       <div className="flex justify-between mb-2">
         <span className="text-sm font-medium text-foreground">{skill.name}</span>
         <span className="text-sm text-muted-foreground">{skill.level}%</span>
       </div>
       <div className="h-2 bg-muted rounded-full overflow-hidden">
-        <div
-          className="h-full bg-gradient-primary transition-all duration-1000 ease-out rounded-full"
-          style={{ width: `${width}%` }}
+        <motion.div
+          className="h-full bg-gradient-primary rounded-full"
+          initial={{ width: 0 }}
+          animate={inView ? { width: `${skill.level}%` } : {}}
+          transition={{ 
+            delay: index * 0.1 + 0.2,
+            duration: 1,
+            ease: "easeOut"
+          }}
         />
       </div>
-    </div>
+    </motion.div>
   );
 };
 
@@ -73,38 +80,65 @@ const Skills = () => {
   return (
     <section id="skills" ref={sectionRef} className="py-20 bg-card/30">
       <div className="container mx-auto px-4">
-        <h2 className="text-4xl md:text-5xl font-bold mb-12 text-center animate-fade-in">
+        <motion.h2 
+          className="text-4xl md:text-5xl font-bold mb-12 text-center"
+          initial={{ opacity: 0, y: -20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
           Technical <span className="bg-gradient-primary bg-clip-text text-transparent">Skills</span>
-        </h2>
+        </motion.h2>
         
         <div className="max-w-5xl mx-auto">
           <div className="grid md:grid-cols-2 gap-x-12 gap-y-8">
-            {categories.map((category) => (
-              <div key={category}>
+            {categories.map((category, catIndex) => (
+              <motion.div 
+                key={category}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: catIndex * 0.1 }}
+              >
                 <h3 className="text-xl font-semibold text-secondary mb-4">{category}</h3>
                 {skillsData
                   .filter(skill => skill.category === category)
                   .map((skill, index) => (
-                    <SkillBar key={index} skill={skill} inView={inView} />
+                    <SkillBar key={index} skill={skill} inView={inView} index={index} />
                   ))}
-              </div>
+              </motion.div>
             ))}
           </div>
           
-          <div className="mt-12 p-6 bg-card/50 backdrop-blur-sm rounded-xl border border-primary/20">
+          <motion.div 
+            className="mt-12 p-6 bg-card/50 backdrop-blur-sm rounded-xl border border-primary/20"
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 }}
+          >
             <h3 className="text-xl font-semibold mb-4 text-center">Additional Technologies</h3>
             <div className="flex flex-wrap gap-3 justify-center">
               {["Java", "C", "HTML/CSS", "Android Studio", "VS Code", "Postman", "XAMPP", 
                 "JWT", "Pandas", "NumPy", "Scikit-learn", "Keras", "Oracle"].map((tech, index) => (
-                <span 
+                <motion.span 
                   key={index}
-                  className="px-4 py-2 bg-primary/10 border border-primary/20 rounded-lg text-sm font-medium hover:bg-primary/20 transition-colors duration-300"
+                  className="px-4 py-2 bg-primary/10 border border-primary/20 rounded-lg text-sm font-medium"
+                  initial={{ opacity: 0, scale: 0 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.05 }}
+                  whileHover={{ 
+                    scale: 1.1,
+                    backgroundColor: "hsl(var(--primary) / 0.2)",
+                    transition: { duration: 0.2 }
+                  }}
                 >
                   {tech}
-                </span>
+                </motion.span>
               ))}
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>
