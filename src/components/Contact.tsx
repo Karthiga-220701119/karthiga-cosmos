@@ -1,5 +1,7 @@
-import { Mail, Phone, MapPin, Linkedin, Github } from "lucide-react";
+import { Mail, Phone, MapPin, Linkedin } from "lucide-react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import MagneticButton from "./MagneticButton";
 
 const Contact = () => {
   const contactInfo = [
@@ -26,25 +28,54 @@ const Contact = () => {
   return (
     <section id="contact" className="py-20 bg-background">
       <div className="container mx-auto px-4">
-        <h2 className="text-4xl md:text-5xl font-bold mb-12 text-center animate-fade-in">
+        <motion.h2 
+          className="text-4xl md:text-5xl font-bold mb-12 text-center"
+          initial={{ opacity: 0, y: -20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
           Get In <span className="bg-gradient-primary bg-clip-text text-transparent">Touch</span>
-        </h2>
+        </motion.h2>
         
         <div className="max-w-4xl mx-auto">
-          <div className="bg-card/50 backdrop-blur-sm rounded-2xl p-8 border border-primary/20 animate-scale-in">
+          <motion.div 
+            className="bg-card/50 backdrop-blur-sm rounded-2xl p-8 border border-primary/20"
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            whileHover={{
+              borderColor: "hsl(var(--primary) / 0.4)",
+              boxShadow: "var(--glow-primary)",
+            }}
+          >
             <p className="text-center text-lg text-foreground/80 mb-8">
               I'm always open to discussing new opportunities, collaborations, or just having a chat about technology!
             </p>
             
             <div className="grid md:grid-cols-3 gap-6 mb-8">
               {contactInfo.map((info, index) => (
-                <div 
+                <motion.div 
                   key={index}
-                  className="flex flex-col items-center p-4 bg-primary/5 rounded-xl border border-primary/10 hover:border-primary/30 transition-all duration-300"
+                  className="flex flex-col items-center p-4 bg-primary/5 rounded-xl border border-primary/10"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  whileHover={{
+                    borderColor: "hsl(var(--primary) / 0.3)",
+                    backgroundColor: "hsl(var(--primary) / 0.1)",
+                    scale: 1.05,
+                  }}
                 >
-                  <div className="p-3 bg-primary/10 rounded-full mb-3">
+                  <motion.div 
+                    className="p-3 bg-primary/10 rounded-full mb-3"
+                    whileHover={{ rotate: 360 }}
+                    transition={{ duration: 0.6 }}
+                  >
                     <div className="text-primary">{info.icon}</div>
-                  </div>
+                  </motion.div>
                   <p className="text-sm text-muted-foreground mb-1">{info.label}</p>
                   {info.link ? (
                     <a 
@@ -56,30 +87,35 @@ const Contact = () => {
                   ) : (
                     <p className="text-sm font-medium text-foreground text-center">{info.value}</p>
                   )}
-                </div>
+                </motion.div>
               ))}
             </div>
             
             <div className="flex justify-center gap-4">
-              <Button 
-                size="lg"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow-primary transition-all duration-300 hover:scale-105"
-                onClick={() => window.open('https://www.linkedin.com/in/karthiga-r', '_blank')}
-              >
-                <Linkedin className="w-5 h-5 mr-2" />
-                LinkedIn
-              </Button>
-              <Button 
-                size="lg"
-                variant="outline"
-                className="border-primary/30 hover:bg-primary/10 hover:border-primary/50 transition-all duration-300"
-                onClick={() => window.open('mailto:karthigarajesh2004@gmail.com')}
-              >
-                <Mail className="w-5 h-5 mr-2" />
-                Email Me
-              </Button>
+              <MagneticButton>
+                <Button 
+                  size="lg"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow-primary transition-all duration-300"
+                  onClick={() => window.open('https://www.linkedin.com/in/karthiga-r', '_blank')}
+                >
+                  <Linkedin className="w-5 h-5 mr-2" />
+                  LinkedIn
+                </Button>
+              </MagneticButton>
+              
+              <MagneticButton>
+                <Button 
+                  size="lg"
+                  variant="outline"
+                  className="border-primary/30 hover:bg-primary/10 hover:border-primary/50 transition-all duration-300"
+                  onClick={() => window.open('mailto:karthigarajesh2004@gmail.com')}
+                >
+                  <Mail className="w-5 h-5 mr-2" />
+                  Email Me
+                </Button>
+              </MagneticButton>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

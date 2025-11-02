@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { ExternalLink, Github } from "lucide-react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import ReactCardFlip from "react-card-flip";
 
 interface Project {
   title: string;
@@ -36,32 +37,147 @@ const projects: Project[] = [
   }
 ];
 
-const Projects = () => {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.15
-      }
-    }
+const ProjectCard = ({ project, index }: { project: Project; index: number }) => {
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [rotateX, setRotateX] = useState(0);
+  const [rotateY, setRotateY] = useState(0);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (isFlipped) return;
+    const card = e.currentTarget;
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const rotateXValue = (y - centerY) / 10;
+    const rotateYValue = (centerX - x) / 10;
+    setRotateX(rotateXValue);
+    setRotateY(rotateYValue);
   };
 
-  const cardVariants = {
-    hidden: { opacity: 0, y: 50 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        type: "spring",
-        stiffness: 100,
-        damping: 12
-      }
-    }
+  const handleMouseLeave = () => {
+    setRotateX(0);
+    setRotateY(0);
   };
 
   return (
-    <section id="projects" className="py-20 bg-card/30">
+    <motion.div
+      initial={{ opacity: 0, y: 50 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{
+        delay: index * 0.15,
+        type: "spring",
+        stiffness: 100,
+        damping: 12
+      }}
+      style={{ perspective: "1000px" }}
+    >
+      <ReactCardFlip isFlipped={isFlipped} flipDirection="horizontal">
+        {/* Front of card */}
+        <motion.div
+          className="bg-card/50 backdrop-blur-sm rounded-xl p-6 border border-primary/20 cursor-pointer h-full min-h-[400px]"
+          style={{
+            transformStyle: "preserve-3d",
+            rotateX,
+            rotateY,
+          }}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          onClick={() => setIsFlipped(true)}
+          whileHover={{
+            borderColor: "hsl(var(--primary) / 0.4)",
+            boxShadow: "var(--glow-primary)",
+            scale: 1.02,
+          }}
+          transition={{ duration: 0.3 }}
+        >
+          <motion.h3 
+            className="text-2xl font-bold mb-3 text-foreground group-hover:text-primary transition-colors"
+          >
+            {project.title}
+          </motion.h3>
+          
+          <p className="text-foreground/80 mb-4 leading-relaxed">
+            {project.description}
+          </p>
+          
+          <div className="mb-4">
+            <h4 className="text-sm font-semibold text-secondary mb-2">Key Features:</h4>
+            <ul className="space-y-1">
+              {project.highlights.map((highlight, i) => (
+                <li key={i} className="text-sm text-muted-foreground flex items-start">
+                  <span className="text-primary mr-2">•</span>
+                  {highlight}
+                </li>
+              ))}
+            </ul>
+          </div>
+          
+          <div className="mt-auto pt-4 border-t border-primary/10">
+            <p className="text-xs text-secondary text-center">Click to view tech stack →</p>
+          </div>
+        </motion.div>
+
+        {/* Back of card */}
+        <motion.div
+          className="bg-gradient-card backdrop-blur-sm rounded-xl p-6 border border-primary/40 cursor-pointer h-full min-h-[400px] flex flex-col"
+          onClick={() => setIsFlipped(false)}
+          whileHover={{
+            borderColor: "hsl(var(--secondary) / 0.6)",
+            boxShadow: "var(--glow-secondary)",
+          }}
+        >
+          <h3 className="text-2xl font-bold mb-4 text-secondary">Tech Stack</h3>
+          
+          <div className="flex-1 flex flex-col justify-center">
+            <div className="grid grid-cols-2 gap-3 mb-6">
+              {project.techStack.map((tech, techIndex) => (
+                <motion.div
+                  key={techIndex}
+                  className="px-4 py-3 bg-primary/10 border border-primary/30 rounded-lg text-sm font-medium text-center"
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: techIndex * 0.1 }}
+                >
+                  {tech}
+                </motion.div>
+              ))}
+            </div>
+          </div>
+          
+          <div className="flex gap-3 justify-center">
+            <motion.a
+              href="#"
+              className="flex items-center gap-2 px-4 py-2 bg-primary/20 border border-primary/40 rounded-lg text-sm font-medium hover:bg-primary/30 transition-colors"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Github className="w-4 h-4" />
+              GitHub
+            </motion.a>
+            <motion.a
+              href="#"
+              className="flex items-center gap-2 px-4 py-2 bg-secondary/20 border border-secondary/40 rounded-lg text-sm font-medium hover:bg-secondary/30 transition-colors"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <ExternalLink className="w-4 h-4" />
+              Live Demo
+            </motion.a>
+          </div>
+          
+          <p className="text-xs text-muted-foreground text-center mt-4">Click to flip back</p>
+        </motion.div>
+      </ReactCardFlip>
+    </motion.div>
+  );
+};
+
+const Projects = () => {
+  return (
+    <section id="projects" className="py-20 bg-card/30 relative">
       <div className="container mx-auto px-4">
         <motion.h2 
           className="text-4xl md:text-5xl font-bold mb-12 text-center"
@@ -73,94 +189,11 @@ const Projects = () => {
           Featured <span className="bg-gradient-primary bg-clip-text text-transparent">Projects</span>
         </motion.h2>
         
-        <motion.div 
-          className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-        >
+        <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
           {projects.map((project, index) => (
-            <motion.div 
-              key={index}
-              variants={cardVariants}
-              className="bg-card/50 backdrop-blur-sm rounded-xl p-6 border border-primary/20 group"
-              whileHover={{ 
-                y: -8,
-                borderColor: "hsl(var(--primary) / 0.4)",
-                boxShadow: "var(--glow-primary)",
-                transition: { duration: 0.3 }
-              }}
-            >
-              <motion.h3 
-                className="text-2xl font-bold mb-3 text-foreground"
-                whileHover={{ color: "hsl(var(--primary))" }}
-              >
-                {project.title}
-              </motion.h3>
-              
-              <p className="text-foreground/80 mb-4 leading-relaxed">
-                {project.description}
-              </p>
-              
-              <div className="mb-4">
-                <h4 className="text-sm font-semibold text-secondary mb-2">Key Features:</h4>
-                <ul className="space-y-1">
-                  {project.highlights.map((highlight, i) => (
-                    <motion.li 
-                      key={i} 
-                      className="text-sm text-muted-foreground flex items-start"
-                      initial={{ opacity: 0, x: -10 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: i * 0.1 }}
-                    >
-                      <span className="text-primary mr-2">•</span>
-                      {highlight}
-                    </motion.li>
-                  ))}
-                </ul>
-              </div>
-              
-              <div className="flex flex-wrap gap-2 mb-4">
-                {project.techStack.map((tech, techIndex) => (
-                  <motion.span 
-                    key={techIndex}
-                    className="text-xs px-3 py-1 bg-primary/10 border border-primary/20 rounded-full text-foreground/90"
-                    whileHover={{ 
-                      scale: 1.1,
-                      backgroundColor: "hsl(var(--primary) / 0.2)"
-                    }}
-                  >
-                    {tech}
-                  </motion.span>
-                ))}
-              </div>
-              
-              <div className="flex gap-3">
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    className="border-primary/30 hover:bg-primary/10 hover:border-primary/50 transition-all"
-                  >
-                    <Github className="w-4 h-4 mr-2" />
-                    Code
-                  </Button>
-                </motion.div>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button 
-                    size="sm"
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                  >
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    Demo
-                  </Button>
-                </motion.div>
-              </div>
-            </motion.div>
+            <ProjectCard key={index} project={project} index={index} />
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );
