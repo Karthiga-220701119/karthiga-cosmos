@@ -9,6 +9,7 @@ import Projects from "@/components/Projects";
 import Education from "@/components/Education";
 import Achievements from "@/components/Achievements";
 import Contact from "@/components/Contact";
+import AIChatbot from "@/components/AIChatbot";
 
 const Index = () => {
   return (
@@ -24,6 +25,7 @@ const Index = () => {
       <Education />
       <Achievements />
       <Contact />
+      <AIChatbot />
       
       {/* Footer */}
       <footer className="py-8 border-t border-primary/20">
