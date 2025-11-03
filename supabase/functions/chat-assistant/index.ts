@@ -134,16 +134,27 @@ Deno.serve(async (req) => {
     const stream = new ReadableStream({
       async start(controller) {
         try {
+          let buffer = '';
+          
           while (true) {
             const { done, value } = await reader!.read();
             if (done) break;
 
-            const chunk = decoder.decode(value);
-            const lines = chunk.split('\n').filter(line => line.trim());
+            buffer += decoder.decode(value, { stream: true });
+            
+            // Process complete JSON objects
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || ''; // Keep the last incomplete line in buffer
 
             for (const line of lines) {
+              const trimmed = line.trim();
+              if (!trimmed || trimmed === '[' || trimmed === ']') continue;
+              
               try {
-                const json = JSON.parse(line);
+                // Remove trailing comma if present
+                const jsonStr = trimmed.endsWith(',') ? trimmed.slice(0, -1) : trimmed;
+                const json = JSON.parse(jsonStr);
+                
                 if (json.candidates?.[0]?.content?.parts?.[0]?.text) {
                   const text = json.candidates[0].content.parts[0].text;
                   const sseData = `data: ${JSON.stringify({
@@ -154,10 +165,12 @@ Deno.serve(async (req) => {
                   controller.enqueue(encoder.encode(sseData));
                 }
               } catch (e) {
-                console.error("Error parsing chunk:", e);
+                // Silently skip parse errors for partial chunks
+                console.log("Skipping incomplete chunk");
               }
             }
           }
+          
           controller.enqueue(encoder.encode('data: [DONE]\n\n'));
           controller.close();
         } catch (error) {
