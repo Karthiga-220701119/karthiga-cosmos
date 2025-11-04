@@ -3,13 +3,13 @@ import BackgroundGradient from "@/components/BackgroundGradient";
 import FloatingParticles from "@/components/FloatingParticles";
 import Hero from "@/components/Hero";
 import About from "@/components/About";
+import SkillShowcase from "@/components/SkillShowcase";
 import Skills from "@/components/Skills";
 import Experience from "@/components/Experience";
 import Projects from "@/components/Projects";
 import Education from "@/components/Education";
 import Achievements from "@/components/Achievements";
 import Contact from "@/components/Contact";
-import AIChatbot from "@/components/AIChatbot";
 
 const Index = () => {
   return (
@@ -19,13 +19,13 @@ const Index = () => {
       <Navigation />
       <Hero />
       <About />
+      <SkillShowcase />
       <Skills />
       <Experience />
       <Projects />
       <Education />
       <Achievements />
       <Contact />
-      <AIChatbot />
       
       {/* Footer */}
       <footer className="py-8 border-t border-primary/20">
