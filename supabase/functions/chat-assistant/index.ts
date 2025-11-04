@@ -99,7 +99,7 @@ Deno.serve(async (req) => {
     ];
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:streamGenerateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:streamGenerateContent?alt=sse&key=${GEMINI_API_KEY}`,
       {
         method: "POST",
         headers: {
@@ -142,31 +142,35 @@ Deno.serve(async (req) => {
 
             buffer += decoder.decode(value, { stream: true });
             
-            // Process complete JSON objects
-            const lines = buffer.split('\n');
-            buffer = lines.pop() || ''; // Keep the last incomplete line in buffer
+            // Split by SSE message delimiter
+            const messages = buffer.split('\n\n');
+            buffer = messages.pop() || ''; // Keep the last incomplete message in buffer
 
-            for (const line of lines) {
-              const trimmed = line.trim();
-              if (!trimmed || trimmed === '[' || trimmed === ']') continue;
+            for (const message of messages) {
+              const lines = message.split('\n');
               
-              try {
-                // Remove trailing comma if present
-                const jsonStr = trimmed.endsWith(',') ? trimmed.slice(0, -1) : trimmed;
-                const json = JSON.parse(jsonStr);
-                
-                if (json.candidates?.[0]?.content?.parts?.[0]?.text) {
-                  const text = json.candidates[0].content.parts[0].text;
-                  const sseData = `data: ${JSON.stringify({
-                    choices: [{
-                      delta: { content: text }
-                    }]
-                  })}\n\n`;
-                  controller.enqueue(encoder.encode(sseData));
+              for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                  const jsonStr = line.slice(6); // Remove 'data: ' prefix
+                  
+                  try {
+                    const json = JSON.parse(jsonStr);
+                    
+                    if (json.candidates?.[0]?.content?.parts?.[0]?.text) {
+                      const text = json.candidates[0].content.parts[0].text;
+                      console.log("Extracted text:", text);
+                      
+                      const sseData = `data: ${JSON.stringify({
+                        choices: [{
+                          delta: { content: text }
+                        }]
+                      })}\n\n`;
+                      controller.enqueue(encoder.encode(sseData));
+                    }
+                  } catch (e) {
+                    console.error("Error parsing SSE data:", e);
+                  }
                 }
-              } catch (e) {
-                // Silently skip parse errors for partial chunks
-                console.log("Skipping incomplete chunk");
               }
             }
           }
