@@ -39,6 +39,8 @@ const projects: Project[] = [
 
 const ProjectCard = ({ project, index }: { project: Project; index: number }) => {
   const [isFlipped, setIsFlipped] = useState(false);
+  const [rotateX, setRotateX] = useState(0);
+  const [rotateY, setRotateY] = useState(0);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (isFlipped) return;
@@ -48,14 +50,15 @@ const ProjectCard = ({ project, index }: { project: Project; index: number }) =>
     const y = e.clientY - rect.top;
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
-    const rotateY = ((x - centerX) / centerX) * 15;
-    const rotateX = ((centerY - y) / centerY) * 15;
-    
-    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.05, 1.05, 1.05)`;
+    const rotateXValue = (y - centerY) / 10;
+    const rotateYValue = (centerX - x) / 10;
+    setRotateX(rotateXValue);
+    setRotateY(rotateYValue);
   };
 
-  const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
-    e.currentTarget.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+  const handleMouseLeave = () => {
+    setRotateX(0);
+    setRotateY(0);
   };
 
   return (
@@ -74,29 +77,24 @@ const ProjectCard = ({ project, index }: { project: Project; index: number }) =>
       <ReactCardFlip isFlipped={isFlipped} flipDirection="horizontal">
         {/* Front of card */}
         <motion.div
-          className="bg-card/50 backdrop-blur-sm rounded-xl p-6 border border-primary/20 cursor-pointer h-full min-h-[400px] relative overflow-hidden"
+          className="bg-card/50 backdrop-blur-sm rounded-xl p-6 border border-primary/20 cursor-pointer h-full min-h-[400px]"
+          style={{
+            transformStyle: "preserve-3d",
+            rotateX,
+            rotateY,
+          }}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
           onClick={() => setIsFlipped(true)}
-          style={{
-            transformStyle: "preserve-3d",
-            transition: "transform 0.1s ease-out"
-          }}
           whileHover={{
             borderColor: "hsl(var(--primary) / 0.4)",
+            boxShadow: "var(--glow-primary)",
+            scale: 1.02,
           }}
+          transition={{ duration: 0.3 }}
         >
-          {/* Animated gradient overlay */}
-          <motion.div
-            className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-500"
-            style={{
-              background: "radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), hsl(var(--primary) / 0.15), transparent 50%)"
-            }}
-          />
-          
           <motion.h3 
-            className="text-2xl font-bold mb-3 text-foreground relative z-10"
-            whileHover={{ x: 10, transition: { duration: 0.2 } }}
+            className="text-2xl font-bold mb-3 text-foreground group-hover:text-primary transition-colors"
           >
             {project.title}
           </motion.h3>

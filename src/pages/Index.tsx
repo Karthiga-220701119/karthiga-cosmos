@@ -3,7 +3,6 @@ import BackgroundGradient from "@/components/BackgroundGradient";
 import FloatingParticles from "@/components/FloatingParticles";
 import Hero from "@/components/Hero";
 import About from "@/components/About";
-import SkillShowcase from "@/components/SkillShowcase";
 import Skills from "@/components/Skills";
 import Experience from "@/components/Experience";
 import Projects from "@/components/Projects";
@@ -19,7 +18,6 @@ const Index = () => {
       <Navigation />
       <Hero />
       <About />
-      <SkillShowcase />
       <Skills />
       <Experience />
       <Projects />

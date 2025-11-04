@@ -57,45 +57,34 @@ const About = () => {
             <motion.div variants={containerVariants} initial="hidden" whileInView="visible" viewport={{ once: true }}>
               <motion.p variants={itemVariants} className="text-lg text-foreground/90 leading-relaxed mb-6">
                 I'm <span className="text-primary font-semibold">Karthiga R</span>, a passionate Computer Science and Engineering student 
-                (2022–2026) at Rajalakshmi Engineering College, specializing in <span className="text-secondary font-semibold">Full-Stack Web Development (MERN)</span>, 
-                <span className="text-secondary font-semibold"> Artificial Intelligence/Machine Learning</span>, and 
-                <span className="text-secondary font-semibold"> Mobile App Development</span>.
+                (2022–2026) at Rajalakshmi Engineering College, specializing in <span className="text-secondary font-semibold">Full-Stack Web Development</span> and 
+                <span className="text-secondary font-semibold"> Artificial Intelligence</span>.
               </motion.p>
               
               <motion.p variants={itemVariants} className="text-lg text-foreground/90 leading-relaxed mb-6">
-                I excel in building production-ready applications using the <span className="text-primary font-semibold">MERN stack</span> (MongoDB, Express.js, React.js, Node.js), 
-                developing intelligent <span className="text-primary font-semibold">AI/ML solutions</span> with TensorFlow and Scikit-learn, and creating 
-                native <span className="text-primary font-semibold">Android applications</span>. My projects range from smart expense trackers with OCR capabilities 
-                to AI-powered terrain analysis systems for disaster management.
+                I love building practical, data-driven applications that solve real-world problems — from intelligent expense managers 
+                to AI-powered terrain analysis systems. My expertise spans across the MERN stack, Python-based ML frameworks, and 
+                mobile app development.
               </motion.p>
               
               <motion.p variants={itemVariants} className="text-lg text-foreground/90 leading-relaxed">
-                With hands-on experience from internships at <span className="text-secondary font-semibold">EY Global Delivery Services</span> and 
-                <span className="text-secondary font-semibold"> CodSoft</span>, I bring both technical expertise and collaborative problem-solving 
-                skills to every project. I'm passionate about leveraging cutting-edge technologies to create impactful solutions.
+                With strong analytical, communication, and leadership skills, I'm eager to contribute to innovative software teams 
+                and continuously learn emerging technologies. I thrive in collaborative environments and enjoy tackling complex 
+                challenges that push the boundaries of what's possible with code.
               </motion.p>
               
               <motion.div variants={itemVariants} className="mt-8 flex flex-wrap gap-3">
-                {[
-                  { label: "MERN Stack Expert", classes: "bg-primary/10 border-primary/20 text-primary" },
-                  { label: "AI/ML Engineer", classes: "bg-secondary/10 border-secondary/20 text-secondary" },
-                  { label: "Mobile Developer", classes: "bg-accent/10 border-accent/20 text-accent" },
-                  { label: "Innovation Driven", classes: "bg-primary/10 border-primary/20 text-primary" }
-                ].map((trait, index) => (
+                {["Problem Solver", "Team Player", "Quick Learner", "Innovation Driven"].map((trait, index) => (
                   <motion.span 
                     key={index}
-                    className={`px-4 py-2 border rounded-full text-sm font-medium ${trait.classes}`}
-                    initial={{ opacity: 0, scale: 0 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.1 + 0.5 }}
+                    className="px-4 py-2 bg-primary/10 border border-primary/20 rounded-full text-sm font-medium text-primary"
                     whileHover={{ 
-                      scale: 1.15,
-                      y: -5,
+                      scale: 1.1,
+                      backgroundColor: "hsl(var(--primary) / 0.2)",
                       transition: { duration: 0.2 }
                     }}
                   >
-                    {trait.label}
+                    {trait}
                   </motion.span>
                 ))}
               </motion.div>
