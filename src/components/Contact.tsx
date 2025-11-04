@@ -96,7 +96,7 @@ const Contact = () => {
                 <Button 
                   size="lg"
                   className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow-primary transition-all duration-300"
-                  onClick={() => window.open('https://www.linkedin.com/in/karthiga-r', '_blank')}
+                  onClick={() => window.open('//www.linkedin.com/in/karthiga-rajesh-2a2897257/', '_blank')}
                 >
                   <Linkedin className="w-5 h-5 mr-2" />
                   LinkedIn
