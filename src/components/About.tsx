@@ -77,14 +77,14 @@ const About = () => {
               
               <motion.div variants={itemVariants} className="mt-8 flex flex-wrap gap-3">
                 {[
-                  { label: "MERN Stack Expert", color: "primary" },
-                  { label: "AI/ML Engineer", color: "secondary" },
-                  { label: "Mobile Developer", color: "accent" },
-                  { label: "Innovation Driven", color: "primary" }
+                  { label: "MERN Stack Expert", classes: "bg-primary/10 border-primary/20 text-primary" },
+                  { label: "AI/ML Engineer", classes: "bg-secondary/10 border-secondary/20 text-secondary" },
+                  { label: "Mobile Developer", classes: "bg-accent/10 border-accent/20 text-accent" },
+                  { label: "Innovation Driven", classes: "bg-primary/10 border-primary/20 text-primary" }
                 ].map((trait, index) => (
                   <motion.span 
                     key={index}
-                    className={`px-4 py-2 bg-${trait.color}/10 border border-${trait.color}/20 rounded-full text-sm font-medium text-${trait.color}`}
+                    className={`px-4 py-2 border rounded-full text-sm font-medium ${trait.classes}`}
                     initial={{ opacity: 0, scale: 0 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
@@ -92,7 +92,6 @@ const About = () => {
                     whileHover={{ 
                       scale: 1.15,
                       y: -5,
-                      boxShadow: trait.color === "primary" ? "var(--glow-primary)" : "var(--glow-secondary)",
                       transition: { duration: 0.2 }
                     }}
                   >

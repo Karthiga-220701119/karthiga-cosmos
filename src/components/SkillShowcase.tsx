@@ -134,10 +134,10 @@ const SkillShowcase = () => {
                   {spec.skills.map((skill, skillIndex) => (
                     <motion.div
                       key={skillIndex}
-                      className="px-3 py-1.5 rounded-lg text-sm font-medium"
+                      className="px-3 py-1.5 rounded-lg text-sm font-medium text-foreground"
                       style={{
-                        background: `${spec.color}11`,
-                        border: `1px solid ${spec.color}33`
+                        background: `${spec.color}22`,
+                        border: `1px solid ${spec.color}55`
                       }}
                       initial={{ opacity: 0, x: -20 }}
                       whileInView={{ opacity: 1, x: 0 }}
@@ -145,8 +145,8 @@ const SkillShowcase = () => {
                       transition={{ delay: index * 0.1 + skillIndex * 0.05 }}
                       whileHover={{
                         x: 5,
-                        background: `${spec.color}22`,
-                        borderColor: `${spec.color}66`
+                        background: `${spec.color}33`,
+                        borderColor: `${spec.color}77`
                       }}
                     >
                       {skill}
