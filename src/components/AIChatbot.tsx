@@ -31,6 +31,7 @@ const AIChatbot = () => {
     setIsLoading(true);
 
     try {
+      console.log("Sending request to chatbot...");
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-assistant`,
         {
@@ -43,19 +44,31 @@ const AIChatbot = () => {
         }
       );
 
-      if (!response.ok || !response.body) {
-        throw new Error("Failed to start stream");
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Response not OK:", response.status, errorText);
+        throw new Error(`Failed to start stream: ${response.status}`);
       }
 
+      if (!response.body) {
+        throw new Error("No response body");
+      }
+
+      console.log("Starting to read stream...");
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let textBuffer = "";
       let streamDone = false;
       let assistantContent = "";
+      let chunkCount = 0;
 
       while (!streamDone) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          console.log("Stream ended, received", chunkCount, "chunks");
+          break;
+        }
+        
         textBuffer += decoder.decode(value, { stream: true });
 
         let newlineIndex: number;
@@ -69,6 +82,7 @@ const AIChatbot = () => {
 
           const jsonStr = line.slice(6).trim();
           if (jsonStr === "[DONE]") {
+            console.log("Received [DONE] signal");
             streamDone = true;
             break;
           }
@@ -77,7 +91,10 @@ const AIChatbot = () => {
             const parsed = JSON.parse(jsonStr);
             const content = parsed.choices?.[0]?.delta?.content as string | undefined;
             if (content) {
+              chunkCount++;
               assistantContent += content;
+              console.log(`Received chunk ${chunkCount}:`, content.substring(0, 30));
+              
               setMessages((prev) => {
                 const last = prev[prev.length - 1];
                 if (last?.role === "assistant") {
@@ -88,17 +105,27 @@ const AIChatbot = () => {
                 return [...prev, { role: "assistant", content: assistantContent }];
               });
             }
-          } catch {
+          } catch (e) {
+            console.error("Failed to parse chunk:", jsonStr.substring(0, 100), e);
             textBuffer = line + "\n" + textBuffer;
             break;
           }
         }
       }
+
+      if (chunkCount === 0) {
+        console.warn("No content chunks received from stream");
+        toast({
+          title: "Warning",
+          description: "No response received from AI. Please try again.",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       console.error("Chat error:", error);
       toast({
         title: "Error",
-        description: "Failed to get response. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to get response. Please try again.",
         variant: "destructive",
       });
     } finally {

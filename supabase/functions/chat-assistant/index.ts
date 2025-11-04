@@ -87,16 +87,29 @@ Deno.serve(async (req) => {
       throw new Error("GEMINI_API_KEY is not configured");
     }
 
-    console.log("Calling Gemini API...");
+    console.log("Processing chat request with", messages.length, "messages");
 
-    // Format messages for Gemini API
-    const geminiMessages = [
-      { role: 'user', parts: [{ text: SYSTEM_PROMPT }] },
-      ...messages.map((msg: any) => ({
+    // Build conversation history with system prompt
+    const contents = [
+      {
+        role: 'user',
+        parts: [{ text: SYSTEM_PROMPT }]
+      },
+      {
+        role: 'model',
+        parts: [{ text: "I understand. I'm ready to answer questions about Karthiga R's profile, skills, projects, and experience." }]
+      }
+    ];
+
+    // Add user messages
+    for (const msg of messages) {
+      contents.push({
         role: msg.role === 'assistant' ? 'model' : 'user',
         parts: [{ text: msg.content }]
-      }))
-    ];
+      });
+    }
+
+    console.log("Calling Gemini API with", contents.length, "messages");
 
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:streamGenerateContent?alt=sse&key=${GEMINI_API_KEY}`,
@@ -106,7 +119,7 @@ Deno.serve(async (req) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          contents: geminiMessages,
+          contents,
           generationConfig: {
             temperature: 0.7,
             maxOutputTokens: 2048,
@@ -118,15 +131,11 @@ Deno.serve(async (req) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Gemini API error:", response.status, errorText);
-      return new Response(
-        JSON.stringify({ error: `Gemini API error: ${response.status}` }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      throw new Error(`Gemini API error: ${response.status}`);
     }
 
-    console.log("Streaming response from Gemini...");
+    console.log("Got response from Gemini, starting stream...");
 
-    // Transform Gemini's streaming format to OpenAI-compatible format
     const reader = response.body?.getReader();
     const encoder = new TextEncoder();
     const decoder = new TextDecoder();
@@ -135,41 +144,46 @@ Deno.serve(async (req) => {
       async start(controller) {
         try {
           let buffer = '';
+          let chunkCount = 0;
           
           while (true) {
             const { done, value } = await reader!.read();
-            if (done) break;
+            if (done) {
+              console.log("Stream complete, processed", chunkCount, "chunks");
+              break;
+            }
 
             buffer += decoder.decode(value, { stream: true });
-            
-            // Split by SSE message delimiter
-            const messages = buffer.split('\n\n');
-            buffer = messages.pop() || ''; // Keep the last incomplete message in buffer
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
 
-            for (const message of messages) {
-              const lines = message.split('\n');
-              
-              for (const line of lines) {
-                if (line.startsWith('data: ')) {
-                  const jsonStr = line.slice(6); // Remove 'data: ' prefix
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                const data = line.slice(6).trim();
+                
+                if (data === '[DONE]') {
+                  console.log("Received [DONE] signal");
+                  continue;
+                }
+
+                try {
+                  const parsed = JSON.parse(data);
+                  const text = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
                   
-                  try {
-                    const json = JSON.parse(jsonStr);
+                  if (text) {
+                    chunkCount++;
+                    console.log(`Chunk ${chunkCount}: ${text.substring(0, 50)}...`);
                     
-                    if (json.candidates?.[0]?.content?.parts?.[0]?.text) {
-                      const text = json.candidates[0].content.parts[0].text;
-                      console.log("Extracted text:", text);
-                      
-                      const sseData = `data: ${JSON.stringify({
-                        choices: [{
-                          delta: { content: text }
-                        }]
-                      })}\n\n`;
-                      controller.enqueue(encoder.encode(sseData));
-                    }
-                  } catch (e) {
-                    console.error("Error parsing SSE data:", e);
+                    const sseData = `data: ${JSON.stringify({
+                      choices: [{
+                        delta: { content: text }
+                      }]
+                    })}\n\n`;
+                    
+                    controller.enqueue(encoder.encode(sseData));
                   }
+                } catch (e) {
+                  console.error("Failed to parse JSON:", data.substring(0, 100), e);
                 }
               }
             }
@@ -193,7 +207,7 @@ Deno.serve(async (req) => {
       },
     });
   } catch (error) {
-    console.error("chat error:", error);
+    console.error("Chat error:", error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
