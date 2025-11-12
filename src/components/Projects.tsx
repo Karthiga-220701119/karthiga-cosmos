@@ -41,6 +41,7 @@ const ProjectCard = ({ project, index }: { project: Project; index: number }) =>
   const [isFlipped, setIsFlipped] = useState(false);
   const [rotateX, setRotateX] = useState(0);
   const [rotateY, setRotateY] = useState(0);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (isFlipped) return;
@@ -50,15 +51,17 @@ const ProjectCard = ({ project, index }: { project: Project; index: number }) =>
     const y = e.clientY - rect.top;
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
-    const rotateXValue = (y - centerY) / 10;
-    const rotateYValue = (centerX - x) / 10;
+    const rotateXValue = (y - centerY) / 15;
+    const rotateYValue = (centerX - x) / 15;
     setRotateX(rotateXValue);
     setRotateY(rotateYValue);
+    setMousePosition({ x: x / rect.width, y: y / rect.height });
   };
 
   const handleMouseLeave = () => {
     setRotateX(0);
     setRotateY(0);
+    setMousePosition({ x: 0.5, y: 0.5 });
   };
 
   return (
@@ -77,7 +80,7 @@ const ProjectCard = ({ project, index }: { project: Project; index: number }) =>
       <ReactCardFlip isFlipped={isFlipped} flipDirection="horizontal">
         {/* Front of card */}
         <motion.div
-          className="bg-card/50 backdrop-blur-sm rounded-xl p-6 border border-primary/20 cursor-pointer h-full min-h-[400px]"
+          className="bg-card/50 backdrop-blur-sm rounded-xl p-6 border border-primary/20 cursor-pointer h-full min-h-[400px] relative overflow-hidden"
           style={{
             transformStyle: "preserve-3d",
             rotateX,
@@ -88,11 +91,33 @@ const ProjectCard = ({ project, index }: { project: Project; index: number }) =>
           onClick={() => setIsFlipped(true)}
           whileHover={{
             borderColor: "hsl(var(--primary) / 0.4)",
-            boxShadow: "var(--glow-primary)",
-            scale: 1.02,
+            scale: 1.03,
           }}
           transition={{ duration: 0.3 }}
         >
+          {/* Animated gradient overlay */}
+          <motion.div
+            className="absolute inset-0 opacity-0 pointer-events-none"
+            style={{
+              background: `radial-gradient(circle at ${mousePosition.x * 100}% ${mousePosition.y * 100}%, hsl(var(--primary) / 0.15), transparent 50%)`,
+            }}
+            animate={{
+              opacity: rotateX !== 0 || rotateY !== 0 ? 1 : 0,
+            }}
+          />
+          
+          {/* Shimmer effect on hover */}
+          <motion.div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: "linear-gradient(90deg, transparent, hsl(var(--primary) / 0.1), transparent)",
+              backgroundSize: "200% 100%",
+            }}
+            animate={{
+              backgroundPosition: rotateX !== 0 || rotateY !== 0 ? ["200% 0", "-200% 0"] : "200% 0",
+            }}
+            transition={{ duration: 1.5, ease: "linear" }}
+          />
           <motion.h3 
             className="text-2xl font-bold mb-3 text-foreground group-hover:text-primary transition-colors"
           >

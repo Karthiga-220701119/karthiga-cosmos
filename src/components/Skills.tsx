@@ -25,7 +25,7 @@ const skillsData: Skill[] = [
 const SkillBar = ({ skill, inView, index }: { skill: Skill; inView: boolean; index: number }) => {
   return (
     <motion.div 
-      className="mb-6"
+      className="mb-6 group"
       initial={{ opacity: 0, x: -30 }}
       animate={inView ? { opacity: 1, x: 0 } : {}}
       transition={{ 
@@ -33,14 +33,26 @@ const SkillBar = ({ skill, inView, index }: { skill: Skill; inView: boolean; ind
         type: "spring",
         stiffness: 100
       }}
+      whileHover={{ x: 5 }}
     >
       <div className="flex justify-between mb-2">
-        <span className="text-sm font-medium text-foreground">{skill.name}</span>
-        <span className="text-sm text-muted-foreground">{skill.level}%</span>
+        <motion.span 
+          className="text-sm font-medium text-foreground"
+          whileHover={{ scale: 1.05, color: "hsl(var(--primary))" }}
+        >
+          {skill.name}
+        </motion.span>
+        <motion.span 
+          className="text-sm text-muted-foreground"
+          animate={inView ? { opacity: [0, 1] } : {}}
+          transition={{ delay: index * 0.1 + 0.5 }}
+        >
+          {skill.level}%
+        </motion.span>
       </div>
-      <div className="h-2 bg-muted rounded-full overflow-hidden">
+      <div className="h-2 bg-muted rounded-full overflow-hidden relative">
         <motion.div
-          className="h-full bg-gradient-primary rounded-full"
+          className="h-full bg-gradient-primary rounded-full relative overflow-hidden"
           initial={{ width: 0 }}
           animate={inView ? { width: `${skill.level}%` } : {}}
           transition={{ 
@@ -48,7 +60,24 @@ const SkillBar = ({ skill, inView, index }: { skill: Skill; inView: boolean; ind
             duration: 1,
             ease: "easeOut"
           }}
-        />
+        >
+          {/* Shimmer effect */}
+          <motion.div
+            className="absolute inset-0 w-full h-full"
+            style={{
+              background: "linear-gradient(90deg, transparent, hsl(var(--primary-foreground) / 0.3), transparent)",
+              backgroundSize: "200% 100%",
+            }}
+            animate={{
+              backgroundPosition: ["200% 0", "-200% 0"],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "linear",
+            }}
+          />
+        </motion.div>
       </div>
     </motion.div>
   );
